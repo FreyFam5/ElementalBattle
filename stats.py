@@ -1,8 +1,10 @@
 ## Defensive stats
 class Defensive():
-	def __init__(self, health: int, armor: int, magic_resistance: int):
+	def __init__(self, max_health, armor: int, magic_resistance: int):
+		# The max health of this character
+		self.max_health = max_health
 		# If this reaches zero, the being dies
-		self.health = health
+		self.health = self.max_health
 		# Reduces physical damage by a flat amount
 		self.armor = armor
 		# Reduces magic damage by a flat amount
