@@ -1,12 +1,23 @@
+from enum import Enum
 from elements import Element
 from stats import Stats, Defensive, Offensive, Base
 
+
+class Races(Enum):
+	HUMAN = "human"
+	DWARF = "dwarf"
+	ELF = "elf"
+	LIZARD_MAN = "lizard man"
+	DEMON = "demon"
+
+
 class BaseBeing():
-	def __init__(self, element: Element, stats: Stats, name: str, skills = {}, status_effects: dict[str, int] = {}):
+	def __init__(self, element: Element, stats: Stats, name: str, race: Races, skills = {}, status_effects: dict[str, int] = {}):
 		self.stats: Stats = stats
 		self.element: Element = element
 		self.skills = skills
 		self.name = name
+		self.race = race
 		self.status_effects = status_effects
 	
 	## Checks the status of the called being
@@ -18,13 +29,16 @@ class BaseBeing():
 		else:
 			line = f"{self.name} has {self.stats.defensive.health} hp!"
 
-		print("".join(["v" for i in range(len(line) + 2)]))
-		print("|" + line + "|")
-		print("".join(["^" for i in range(len(line) + 2)]))
+		print("".join(["v" for i in range(len(line) + 4)]))
+		print("| " + line + " |")
+		print("".join(["^" for i in range(len(line) + 4)]))
+	
+	def __str__(self):
+		return self.race.value
 
 
 class Human(BaseBeing):
-	def __init__(self, element: Element, name: str, skills = {}):
+	def __init__(self, element: Element, name: str, race: Races = Races.HUMAN, skills = {}):
 		super().__init__(
 			element, 
 			Stats(
@@ -33,11 +47,12 @@ class Human(BaseBeing):
 				Offensive(physical=25, magic=5)
 				), 
 			name,
+			race,
 			skills
 			)
 
 class Elf(BaseBeing):
-	def __init__(self, element: Element, name: str, skills = {}):
+	def __init__(self, element: Element, name: str, race: Races = Races.ELF, skills = {}):
 		super().__init__(
 			element, 
 			Stats(
@@ -46,11 +61,12 @@ class Elf(BaseBeing):
 				Offensive(physical=15, magic=30)
 			), 
 			name,
+			race,
 			skills
 			)
 
 class Dwarf(BaseBeing):
-	def __init__(self, element: Element, name: str, skills = {}):
+	def __init__(self, element: Element, name: str, race: Races = Races.DWARF, skills = {}):
 		super().__init__(
 			element, 
 			Stats(
@@ -59,11 +75,12 @@ class Dwarf(BaseBeing):
 				Offensive(physical=35, magic=0)
 			), 
 			name,
+			race,
 			skills
 			)
 
 class Demon(BaseBeing):
-	def __init__(self, element: Element, name: str, skills = {}):
+	def __init__(self, element: Element, name: str, race: Races = Races.DEMON, skills = {}):
 		super().__init__(
 			element, 
 			Stats(
@@ -72,11 +89,12 @@ class Demon(BaseBeing):
 				Offensive(physical=25, magic=35)
 			), 
 			name,
+			race,
 			skills
 			)
 
 class LizardMan(BaseBeing):
-	def __init__(self, element: Element, name: str, skills = {}):
+	def __init__(self, element: Element, name: str, race: Races = Races.LIZARD_MAN, skills = {}):
 		super().__init__(
 			element, 
 			Stats(
@@ -85,5 +103,6 @@ class LizardMan(BaseBeing):
 				Offensive(physical=30, magic=5)
 			), 
 			name,
+			race,
 			skills
 			)
