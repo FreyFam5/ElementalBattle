@@ -33,8 +33,13 @@ class BaseBeing():
 		print("| " + line + " |")
 		print("".join(["^" for i in range(len(line) + 4)]))
 	
-	def __str__(self):
+	def __repr__(self):
 		return self.race.value
+
+	def __eq__(self, other):
+		if not isinstance(other, BaseBeing):
+			return other == self.race.value
+		return other.element == self.element and self.race == other.race
 
 
 class Human(BaseBeing):

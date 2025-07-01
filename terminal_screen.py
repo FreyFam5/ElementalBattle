@@ -1,6 +1,5 @@
 import races
 
-
 human = races.Human(races.Element.PHYSICAL, "")
 elf = races.Elf(races.Element.PHYSICAL, "")
 dwarf = races.Dwarf(races.Element.PHYSICAL, "")
@@ -10,41 +9,62 @@ lizard_man = races.LizardMan(races.Element.PHYSICAL, "")
 
 def start_game():
 	add_dialogue("Welcome to elemental battle! Are you ready to join the battle?")
-	add_options("Brilliant, well then pick a race!: ", [human, elf, dwarf, demon,	lizard_man])
+
+	player_name = ""
+	want_to_change: bool = True
+	while want_to_change:
+		player_name: str = add_dialogue("Well, write your great name below adventurer!",  "Name here: ", []).capitalize()
+		want_to_change = bool(add_dialogue(f'Are you sure you want to use "{player_name}" for your name?', "Y = yes | N = no: ", ["y", "n"], True))
+
+		if not want_to_change:
+			break
+	
+	player: races.BaseBeing = add_options(f"Brilliant {player_name}, well then pick a race!: ", [human, elf, dwarf, demon, lizard_man])
+	player.name = player_name
+
+	print(f"You are now {player.name} the {player}!")
+
+## Adds a border to text and returns it
+def add_border(value, top: str = "-", bot: str = "-", corners: str = "+", sides: str = "|") -> str:
+	text = ""
+	text += corners + "".join([top for i in range(len(value) + 2)]) + corners + "\n"
+	text += f"{sides} {value} {sides}\n"
+	text += corners + "".join([bot for i in range(len(value) + 2)]) + corners
+	return text
 
 ## Adds a bit of text then asks for an input.
-def add_dialogue(text: str, prompt: str = "Continue by typing and entering 'Y': ", options: list = ["y"], skip_checking_input: bool = False):
-	print(text)
-	add_input(prompt, options, skip_checking_input)
+def add_dialogue(text: str, prompt: str = "Continue by typing and entering 'Y': ", options: list = ["y"], return_idx: bool = False):
+	print(add_border(text))
+	return add_input(prompt, options, return_idx)
 
-## Checks the input and if it is not in the options, will ask again for a 'correct' input. This check can also be skipped.
-def add_input(prompt: str, options: list, skip_checking_input: bool = False) -> str:
+## Checks the input and if it is not in the options, will ask again for a 'correct' input. 
+## This check can also be skipped. It then returns either the index or the string of the found option.
+def add_input(prompt: str, options: list, return_idx: bool = False) -> str | int:
 	prompt_input = input(prompt).lower()
-	input_idx = float('inf')
+	input_idx = float('inf') # Sets to infinity so it can be compared consistently
 	# Does a try except just incase the input isn't able to be indexed
 	try:
 		input_idx = int(prompt_input)
 	except:
 		pass
-	# If the prompt isn't in options, and not skipping check, will recursively call add input
-	if prompt_input not in options and not skip_checking_input:
+	# If the prompt isn't in options, and options isn't empty, will recursively call add input
+	if prompt_input not in options and len(options) != 0:
 		# Checks to see if the input was an index
 		if input_idx > 0 and input_idx - 1 < len(options):
-			return options[input_idx - 1]
-		add_input(prompt, options)
-	else:
-		return prompt_input
+			return input_idx - 1 if return_idx else options[input_idx - 1]
+		print(f'"{prompt_input}" is not a valid input!')
+		return add_input(prompt, options, return_idx) # Recursive call
+	# Returns the prompt string if it was found
+	return options.index(prompt_input) if return_idx else prompt_input
 
 ## Adds options for player to pick through
-def add_options(text: str, options: list):
+def add_options(text: str, options: list) -> any:
 	final_line = ""
 	for i in range(len(options)):
 		final_line += f"| {i + 1}: {options[i]} |"
 	
-	print("".join(["\\" for i in range(len(final_line))]))
-	print(final_line)
-	print("".join(["\\" for i in range(len(final_line))]))
+	print(add_border(final_line, top="=", bot="="))
 
-	result = add_input(text, options)
+	result = options[add_input(text, options, True)]
 	print(f"You picked {result}!")
 	return result
