@@ -7,13 +7,15 @@ class Defensive():
 		self.health = self.max_health
 		# Reduces physical damage by a flat amount
 		self.armor = armor
+		self.max_armor = armor
 		# Reduces magic damage by a flat amount
 		self.magic_resistance = magic_resistance
+		self.max_mag_res = magic_resistance
 
 ## Offensive stats
 class Offensive():
 	def __init__(self, physical: int, magic: int):
-		# Increases damage done from attacks that use phyical
+		# Increases damage done from attacks that use physical
 		self.physical = physical
 		# Increases damage done from attacks that use magic
 		self.magic = magic
@@ -21,7 +23,7 @@ class Offensive():
 ## Base/Misc stats
 class Base():
 	def __init__(self, speed: int, stamina: int, mana: int):
-		# Determins when this being will have their turn
+		# Determines when this being will have their turn
 		self.speed = speed
 		# A resource for skills that use physical damage typically
 		self.stamina = stamina

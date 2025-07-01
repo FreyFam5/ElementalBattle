@@ -1,7 +1,7 @@
 import random
 from enum import Enum
-from races import BaseBeing
-from elements import Element, contest_elements
+from content.races import BaseBeing
+from content.elements import Elements, contest_elements
 
 
 class SkillTypes(Enum):
@@ -18,13 +18,13 @@ class BaseSkill():
 			name: str, 
 			cost: int, 
 			value: list[int],
-			element: Element,
+			element: Elements,
 			skill_type: SkillTypes,
 			resistance_type: ResistanceTypes = ResistanceTypes.ARMOR
 			):
 		self.name = name # The name of the skill
 		self.cost = cost # The resource cost of the skill
-		self.resistance_type = resistance_type # The type of resistance that this speel will be checked against
+		self.resistance_type = resistance_type # The type of resistance that this skill will be checked against
 		self.value = value # The value of the skill, either damage or healing
 		self.element = element # The element the skill will use
 		self.skill_type = skill_type # Holds wether the skill is an attack/support skill
@@ -39,7 +39,7 @@ class BaseSkill():
 					total_damage *= 2
 				# Increases/Reduces damage of skill based on the defending element
 				total_damage = round(total_damage * contest_elements(self.element, target.element))
-				# If the skills restance type is armor, use armor for checking
+				# If the skills resistance type is armor, use armor for checking
 				if self.resistance_type == ResistanceTypes.ARMOR:
 					total_damage -= target.stats.defensive.armor
 				# Else use magic resistance
@@ -74,21 +74,21 @@ class BaseSkill():
 ## Attack Skills
 class Punch(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Punch", cost=5, resistance_type=ResistanceTypes.ARMOR, value=[7, 10], element=Element.PHYSICAL, skill_type=SkillTypes.ATTACK)
+		super().__init__(name="Punch", cost=5, resistance_type=ResistanceTypes.ARMOR, value=[7, 10], element=Elements.PHYSICAL, skill_type=SkillTypes.ATTACK)
 
 class DeathRoll(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Death Roll", cost=30, resistance_type=ResistanceTypes.ARMOR, value=[25, 40], element=Element.EARTH, skill_type=SkillTypes.ATTACK)
+		super().__init__(name="Death Roll", cost=30, resistance_type=ResistanceTypes.ARMOR, value=[25, 40], element=Elements.EARTH, skill_type=SkillTypes.ATTACK)
 
-class FIREBALL(BaseSkill):
+class FireBall(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Fire Ball", cost=10, resistance_type=ResistanceTypes.MAG_RES, value=[10, 15], element=Element.FIRE, skill_type=SkillTypes.ATTACK)
+		super().__init__(name="Fire Ball", cost=10, resistance_type=ResistanceTypes.MAG_RES, value=[10, 15], element=Elements.FIRE, skill_type=SkillTypes.ATTACK)
 
-class WINDBLADE(BaseSkill):
+class WindBlade(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Wind Blade", cost=5, resistance_type=ResistanceTypes.MAG_RES, value=[15, 18], element=Element.WIND, skill_type=SkillTypes.ATTACK)
+		super().__init__(name="Wind Blade", cost=5, resistance_type=ResistanceTypes.MAG_RES, value=[15, 18], element=Elements.WIND, skill_type=SkillTypes.ATTACK)
 
 ## Support Skills
 class MoistHeal(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Moist Heal", cost=20, value=[15, 30], element=Element.WATER, skill_type=SkillTypes.SUPPORT)
+		super().__init__(name="Moist Heal", cost=20, value=[15, 30], element=Elements.WATER, skill_type=SkillTypes.SUPPORT)

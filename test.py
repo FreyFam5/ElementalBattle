@@ -1,7 +1,3 @@
-import terminal_screen
-import races
-import skills
-import elements
+import central_system
 
-
-terminal_screen.start_game()
+central_system.start_game()

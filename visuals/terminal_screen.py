@@ -1,29 +1,3 @@
-import races
-
-human = races.Human(races.Element.PHYSICAL, "")
-elf = races.Elf(races.Element.PHYSICAL, "")
-dwarf = races.Dwarf(races.Element.PHYSICAL, "")
-demon = races.Demon(races.Element.PHYSICAL, "")
-lizard_man = races.LizardMan(races.Element.PHYSICAL, "")
-
-
-def start_game():
-	add_dialogue("Welcome to elemental battle! Are you ready to join the battle?")
-
-	player_name = ""
-	want_to_change: bool = True
-	while want_to_change:
-		player_name: str = add_dialogue("Well, write your great name below adventurer!",  "Name here: ", []).capitalize()
-		want_to_change = bool(add_dialogue(f'Are you sure you want to use "{player_name}" for your name?', "Y = yes | N = no: ", ["y", "n"], True))
-
-		if not want_to_change:
-			break
-	
-	player: races.BaseBeing = add_options(f"Brilliant {player_name}, well then pick a race!: ", [human, elf, dwarf, demon, lizard_man])
-	player.name = player_name
-
-	print(f"You are now {player.name} the {player}!")
-
 ## Adds a border to text and returns it
 def add_border(value, top: str = "-", bot: str = "-", corners: str = "+", sides: str = "|") -> str:
 	text = ""
@@ -57,7 +31,7 @@ def add_input(prompt: str, options: list, return_idx: bool = False) -> str | int
 	# Returns the prompt string if it was found
 	return options.index(prompt_input) if return_idx else prompt_input
 
-## Adds options for player to pick through
+## Adds options for player to pick through and returns the given options list item that was picked
 def add_options(text: str, options: list) -> any:
 	final_line = ""
 	for i in range(len(options)):
