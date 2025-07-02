@@ -1,7 +1,13 @@
+from __future__ import annotations
 from enum import Enum
 from content.elements import Elements
 from content.stats import Stats, Defensive, Offensive, Base
 from visuals.terminal_screen import add_border
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	import content.status_effects as status_effects
+	import content.skills as skills
 
 class Races(Enum):
 	HUMAN = "human"
@@ -12,7 +18,7 @@ class Races(Enum):
 
 
 class BaseBeing():
-	def __init__(self, element: Elements, stats: Stats, name: str, race: Races, skills = {}, status_effects: dict[str, int] = {}):
+	def __init__(self, element: Elements, stats: Stats, name: str, race: Races, skills: list[skills.BaseSkill], status_effects: dict[str, status_effects.BaseEffect] = {}):
 		self.stats: Stats = stats
 		self.element: Elements = element
 		self.skills = skills
@@ -22,17 +28,32 @@ class BaseBeing():
 	
 	## Checks the status of the called being
 	def check_status(self):
+		self.increment_effects()
 		# The line that will be printed
 		line: str = ""
 		if self.stats.defensive.health <= 0:
 			line = f"{self.name} has reached 0 hp and died!"
 		else:
-			line = f"{self.name} has {self.stats.defensive.health} hp!"
+			line = f"{self.name} has {self.stats.defensive.health} / {self.stats.defensive.max_health} hp!"
 
-		print(add_border(line, top="+", bot="+"))
+		print(add_border(line))
+	
+	# Increments the effects on this being
+	def increment_effects(self):
+		effects_to_del: status_effects.BaseEffect = []
+		for effect in self.status_effects:
+			# Will do the effects thing then if it returns True(saying it has ended) it will remove it from the status effects
+			if self.status_effects[effect].effect():
+				effects_to_del.append(self.status_effects[effect])
+		# After using all the effects, checks the effects to delete and gets rid of them
+		for effect in effects_to_del:
+			del self.status_effects[effect.name]
+		effects_to_del.clear() # Deletes 
+	
 	# Print the race of the being if it is printed
 	def __repr__(self):
-		return self.race.value
+		return self.race.value.capitalize()
+
 	# If checked for equal against something
 	def __eq__(self, other):
 		if not isinstance(other, BaseBeing):
@@ -40,7 +61,7 @@ class BaseBeing():
 		return other.element == self.element and self.race == other.race # If the other is another base being then will check against element and race
 
 class Human(BaseBeing):
-	def __init__(self, element: Elements, name: str, race: Races = Races.HUMAN, skills = {}):
+	def __init__(self, element: Elements, name: str, race: Races = Races.HUMAN, skills: list[skills.BaseSkill] = []):
 		super().__init__(
 			element, 
 			Stats(
@@ -54,7 +75,7 @@ class Human(BaseBeing):
 			)
 
 class Elf(BaseBeing):
-	def __init__(self, element: Elements, name: str, race: Races = Races.ELF, skills = {}):
+	def __init__(self, element: Elements, name: str, race: Races = Races.ELF, skills: list[skills.BaseSkill] = []):
 		super().__init__(
 			element, 
 			Stats(
@@ -68,7 +89,7 @@ class Elf(BaseBeing):
 			)
 
 class Dwarf(BaseBeing):
-	def __init__(self, element: Elements, name: str, race: Races = Races.DWARF, skills = {}):
+	def __init__(self, element: Elements, name: str, race: Races = Races.DWARF, skills: list[skills.BaseSkill] = []):
 		super().__init__(
 			element, 
 			Stats(
@@ -82,7 +103,7 @@ class Dwarf(BaseBeing):
 			)
 
 class Demon(BaseBeing):
-	def __init__(self, element: Elements, name: str, race: Races = Races.DEMON, skills = {}):
+	def __init__(self, element: Elements, name: str, race: Races = Races.DEMON, skills: list[skills.BaseSkill] = []):
 		super().__init__(
 			element, 
 			Stats(
@@ -96,7 +117,7 @@ class Demon(BaseBeing):
 			)
 
 class LizardMan(BaseBeing):
-	def __init__(self, element: Elements, name: str, race: Races = Races.LIZARD_MAN, skills = {}):
+	def __init__(self, element: Elements, name: str, race: Races = Races.LIZARD_MAN, skills: list[skills.BaseSkill] = []):
 		super().__init__(
 			element, 
 			Stats(

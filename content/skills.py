@@ -1,7 +1,13 @@
+from __future__ import annotations
 import random
+from copy import deepcopy
 from enum import Enum
-from content.races import BaseBeing
+import content.status_effects as status_effects
 from content.elements import Elements, contest_elements
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	from content.races import BaseBeing
 
 
 class SkillTypes(Enum):
@@ -16,11 +22,12 @@ class BaseSkill():
 	def __init__(
 			self, 
 			name: str, 
-			cost: int, 
+			cost: tuple[str, int], 
 			value: list[int],
 			element: Elements,
 			skill_type: SkillTypes,
-			resistance_type: ResistanceTypes = ResistanceTypes.ARMOR
+			resistance_type: ResistanceTypes = ResistanceTypes.ARMOR,
+			effect: status_effects.BaseEffect = None
 			):
 		self.name = name # The name of the skill
 		self.cost = cost # The resource cost of the skill
@@ -28,12 +35,42 @@ class BaseSkill():
 		self.value = value # The value of the skill, either damage or healing
 		self.element = element # The element the skill will use
 		self.skill_type = skill_type # Holds wether the skill is an attack/support skill
+		self.effect = effect # The optional effect that is applied by this skill
 	
-	def use(self, user: BaseBeing, target: BaseBeing):
+	def __eq__(self, other):
+		if not isinstance(other, BaseSkill):
+			return other == self.name
+		return other.name == self.name
+
+	def __repr__(self):
+		return self.name
+
+	## Uses the skill and returns if it was used or not
+	def use(self, user: BaseBeing, target: BaseBeing) -> bool:
+		# Takes the correct resource if possible
+		match self.cost[0]:
+			case "s":
+				if user.stats.base.stamina < self.cost[1]:
+					return False
+				user.stats.base.stamina -= self.cost[1]
+			case "m":
+				if user.stats.base.mana < self.cost[1]:
+					return False
+				user.stats.base.mana -= self.cost[1]
+
 		match self.skill_type:
 			# Skills that are meant to target the users enemy, ie. "attacking" them
 			case SkillTypes.ATTACK:
-				total_damage = round(random.randrange(self.value[0], self.value[1]))
+				
+				total_damage = 0
+				# Checks to see if it is a random amount of damage or not
+				if len(self.value) > 1:
+					total_damage = round(random.randrange(self.value[0], self.value[1]))
+				else:
+					total_damage = self.value[0]
+					if total_damage == 0:
+						print(f"{user.name} used {self.name} on {target.name}!")
+						return
 				# Increase damage of skill if it's element matches its user element
 				if user.element == self.element:
 					total_damage *= 2
@@ -48,14 +85,19 @@ class BaseSkill():
 				# Does the damage to the target, also makes sure the damage is always at least 1
 				total_damage = max(total_damage, 1)
 				target.stats.defensive.health -= total_damage
-
+				
 				print(f"{user.name} used {self.name} on {target.name}!")
-				print(f"It did {total_damage} {self.element.value} damage!")
-				target.check_status()
+				if total_damage > 0:
+					print(f"It did {total_damage} {self.element.value} damage!")
 
 			# Skills that are meant to be used on the user themselves, ie. "supporting" them
 			case SkillTypes.SUPPORT:
-				total_healing = round(random.randrange(self.value[0], self.value[1]))
+				total_healing: int = 0
+				# Checks to see if it is a random amount of healing or not
+				if len(self.value) > 1:
+					total_healing = round(random.randrange(self.value[0], self.value[1]))
+				else:
+					total_healing = self.value[0]
 				# Increase healing if skills has same element as user
 				if user.element == self.element:
 					total_healing *= 2
@@ -68,27 +110,125 @@ class BaseSkill():
 				target.stats.defensive.health += total_healing
 
 				print(f"{user.name} used {self.name} on {target.name}!")
-				print(f"It healed {total_healing} health!")
-				target.check_status()
+				if total_healing > 0:
+					print(f"It healed {total_healing} health!")
 
-## Attack Skills
+		self.apply_effect(target)
+		target.check_status()
+
+	def apply_effect(self, target: BaseBeing):
+		if not self.effect:
+			return
+		if self.effect.name not in target.status_effects:
+			effect = deepcopy(self.effect)
+			effect.target = target
+			target.status_effects[effect.name] = effect
+		target.status_effects[self.effect.name].stacks += 1
+
+
+##* Attack Skills
 class Punch(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Punch", cost=5, resistance_type=ResistanceTypes.ARMOR, value=[7, 10], element=Elements.PHYSICAL, skill_type=SkillTypes.ATTACK)
+		super().__init__(
+			name="punch", 
+			cost=("s", 5), 
+			resistance_type=ResistanceTypes.ARMOR, 
+			value=[7, 10], 
+			element=Elements.PHYSICAL, 
+			skill_type=SkillTypes.ATTACK
+			)
 
 class DeathRoll(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Death Roll", cost=30, resistance_type=ResistanceTypes.ARMOR, value=[25, 40], element=Elements.EARTH, skill_type=SkillTypes.ATTACK)
+		super().__init__(
+			name="death roll", 
+			cost=("s", 30), 
+			resistance_type=ResistanceTypes.ARMOR, 
+			value=[25, 40], 
+			element=Elements.EARTH, 
+			skill_type=SkillTypes.ATTACK, 
+			effect=status_effects.BrokenBody()
+			)
 
 class FireBall(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Fire Ball", cost=10, resistance_type=ResistanceTypes.MAG_RES, value=[10, 15], element=Elements.FIRE, skill_type=SkillTypes.ATTACK)
+		super().__init__(
+			name="fire ball", 
+			cost=("m", 10), 
+			resistance_type=ResistanceTypes.MAG_RES, 
+			value=[10, 15], 
+			element=Elements.FIRE, 
+			skill_type=SkillTypes.ATTACK,
+			effect=status_effects.Burn()
+			)
 
 class WindBlade(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Wind Blade", cost=5, resistance_type=ResistanceTypes.MAG_RES, value=[15, 18], element=Elements.WIND, skill_type=SkillTypes.ATTACK)
+		super().__init__(
+			name="wind blade", 
+			cost=("m", 5), 
+			resistance_type=ResistanceTypes.MAG_RES, 
+			value=[30, 40], 
+			element=Elements.WIND, 
+			skill_type=SkillTypes.ATTACK
+			)
 
-## Support Skills
+class WaterBolt(BaseSkill):
+	def __init__(self):
+		super().__init__(
+			name="water bolt", 
+			cost=("m", 25), 
+			resistance_type=ResistanceTypes.MAG_RES, 
+			value=[15, 22], 
+			element=Elements.WATER, 
+			skill_type=SkillTypes.ATTACK,
+			effect=status_effects.BrokenMind()
+			)
+
+##* Support Skills
 class MoistHeal(BaseSkill):
 	def __init__(self):
-		super().__init__(name="Moist Heal", cost=20, value=[15, 30], element=Elements.WATER, skill_type=SkillTypes.SUPPORT)
+		super().__init__(
+			name="moist heal", 
+			cost=("m", 20), 
+			resistance_type=ResistanceTypes.MAG_RES,
+			value=[15, 30], 
+			element=Elements.WATER, 
+			skill_type=SkillTypes.SUPPORT
+			)
+
+class WarmHeal(BaseSkill):
+	def __init__(self):
+		super().__init__(
+			name="warm heal", 
+			cost=("m", 20), 
+			resistance_type=ResistanceTypes.MAG_RES,
+			value=[5, 7], 
+			element=Elements.FIRE, 
+			skill_type=SkillTypes.SUPPORT, 
+			effect=status_effects.SlowHeal()
+			)
+
+class ArmorUp(BaseSkill):
+	def __init__(self):
+		super().__init__(
+			name="armor up", 
+			cost=("s", 25), 
+			resistance_type=ResistanceTypes.ARMOR,
+			value=[0], 
+			element=Elements.EARTH, 
+			skill_type=SkillTypes.SUPPORT, 
+			effect=status_effects.StrongBody()
+			)
+
+class MindUp(BaseSkill):
+	def __init__(self):
+		super().__init__(
+			name="mind up", 
+			cost=("m", 30), 
+			resistance_type=ResistanceTypes.MAG_RES,
+			value=[0], 
+			element=Elements.WIND, 
+			skill_type=SkillTypes.SUPPORT, 
+			effect=status_effects.StrongMind()
+			)

@@ -1,6 +1,6 @@
 ## Defensive stats
 class Defensive():
-	def __init__(self, max_health, armor: int, magic_resistance: int):
+	def __init__(self, max_health: int, armor: int, magic_resistance: int):
 		# The max health of this character
 		self.max_health = max_health
 		# If this reaches zero, the being dies
@@ -11,6 +11,12 @@ class Defensive():
 		# Reduces magic damage by a flat amount
 		self.magic_resistance = magic_resistance
 		self.max_mag_res = magic_resistance
+	
+	def __repr__(self):
+		return \
+			f" Health: {self.health} / {self.max_health}\n" + \
+			f" Armor: {self.armor}\n" + \
+			f" Magic res: {self.magic_resistance}\n"
 
 ## Offensive stats
 class Offensive():
@@ -27,8 +33,16 @@ class Base():
 		self.speed = speed
 		# A resource for skills that use physical damage typically
 		self.stamina = stamina
+		self.max_stamina = stamina
 		# A resource for skills that use magic damage typically
 		self.mana = mana
+		self.max_mana = self.mana
+	
+	def __repr__(self):
+		return \
+			f" Speed: {self.speed} m/s \n" + \
+			f" Stamina: {self.stamina} / {self.max_stamina}\n" + \
+			f" Mana: {self.mana} / {self.max_mana}\n"
 
 ## The class that will be used for all the other stats
 class Stats():
@@ -36,5 +50,7 @@ class Stats():
 		self.base = base
 		self.defensive = defensive
 		self.offensive = offensive
-
-
+	
+	def __repr__(self):
+		return f"Stats:\n{self.defensive}{self.base}"
+			

@@ -1,5 +1,24 @@
+from enum import Enum
+
+class BorderPresets(Enum):
+	BASIC = 0
+	DEBUFF = 1
+	BUFF = 2
+
 ## Adds a border to text and returns it
-def add_border(value, top: str = "-", bot: str = "-", corners: str = "+", sides: str = "|") -> str:
+def add_border(value, top: str = "-", bot: str = "-", corners: str = "+", sides: str = "|", preset: BorderPresets = BorderPresets.BASIC) -> str:
+	match preset:
+		case BorderPresets.DEBUFF:
+			top = "x"
+			bot = "x"
+			corners = "X"
+			sides = "X"
+		case BorderPresets.BUFF:
+			top = "I"
+			bot = "I"
+			corners = "0"
+		case _:
+			pass
 	text = ""
 	text += corners + "".join([top for i in range(len(value) + 2)]) + corners + "\n"
 	text += f"{sides} {value} {sides}\n"
@@ -35,7 +54,10 @@ def add_input(prompt: str, options: list, return_idx: bool = False) -> str | int
 def add_options(text: str, options: list) -> any:
 	final_line = ""
 	for i in range(len(options)):
-		final_line += f"| {i + 1}: {options[i]} |"
+		if isinstance(options[i], Enum):
+			final_line += f"| {i + 1}: {options[i].value} |"
+		else:
+			final_line += f"| {i + 1}: {options[i]} |"
 	
 	print(add_border(final_line, top="=", bot="="))
 
