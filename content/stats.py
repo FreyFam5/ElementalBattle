@@ -33,16 +33,14 @@ class Base():
 		self.speed = speed
 		# A resource for skills that use physical damage typically
 		self.stamina = stamina
-		self.max_stamina = stamina
 		# A resource for skills that use magic damage typically
 		self.mana = mana
-		self.max_mana = self.mana
 	
 	def __repr__(self):
 		return \
 			f" Speed: {self.speed} m/s \n" + \
-			f" Stamina: {self.stamina} / {self.max_stamina}\n" + \
-			f" Mana: {self.mana} / {self.max_mana}\n"
+			f" Stamina: {self.stamina}\n" + \
+			f" Mana: {self.mana}\n"
 
 ## The class that will be used for all the other stats
 class Stats():

@@ -34,7 +34,10 @@ class BaseBeing():
 		if self.stats.defensive.health <= 0:
 			line = f"{self.name} has reached 0 hp and died!"
 		else:
-			line = f"{self.name} has {self.stats.defensive.health} / {self.stats.defensive.max_health} hp!"
+			line = (
+				f"{self.name} stats: {self.stats.defensive.health}/{self.stats.defensive.max_health} hp | {self.stats.base.stamina} stamina | {self.stats.base.mana} mana | " +
+				f"{self.stats.defensive.armor} armor | {self.stats.defensive.magic_resistance} magic resistance"
+				)
 
 		print(add_border(line))
 	

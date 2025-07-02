@@ -1,5 +1,6 @@
 from __future__ import annotations
 from visuals.terminal_screen import add_border, BorderPresets
+import random
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -30,6 +31,7 @@ class BaseEffect():
 			self.added_stack()
 		if self.counter > 0:
 			self.counter_ticked()
+			print(add_border(f"{self} has {self.counter + 1} turns left until expiring!", top="0", bot="0", corners="0"))
 			return False
 		else:
 			print(add_border(f'"{self}" has ended on {self.target.name}!'))
@@ -44,6 +46,7 @@ class BaseEffect():
 	# Method is called when the counter is incremented
 	def counter_ticked(self):
 		self.counter -= 1
+		
 
 ##* Debuffs
 ##? Does damage to the target every turn
@@ -55,7 +58,7 @@ class Burn(BaseEffect):
 	def counter_ticked(self):
 		super().counter_ticked()
 		self.target.stats.defensive.health -= self.value
-		print(add_border(f"{self.target} has been burned for {self.value} damage!", preset=BorderPresets.DEBUFF))
+		print(add_border(f"{self.target.name} has been burned for {self.value} damage!", preset=BorderPresets.DEBUFF))
 
 ##? Reduces the targets armor based on the amount of stacks
 class BrokenBody(BaseEffect):
@@ -82,7 +85,7 @@ class BrokenBody(BaseEffect):
 			self.effect_applied = True
 			self.total_armor_reduce = self.value * self.stacks
 			self.target.stats.defensive.armor -= self.total_armor_reduce
-			print(add_border(f"{self.target} has had {self} applied to them, losing {self.total_armor_reduce} armor", preset=BorderPresets.DEBUFF))
+			print(add_border(f"{self.target.name} has had {self} applied to them, losing {self.total_armor_reduce} armor", preset=BorderPresets.DEBUFF))
 
 ##? Reduces the targets magic resistance base on the amount of stacks
 class BrokenMind(BaseEffect):
@@ -109,7 +112,7 @@ class BrokenMind(BaseEffect):
 			self.effect_applied = True
 			self.total_magic_resistance_reduce = self.value * self.stacks
 			self.target.stats.defensive.magic_resistance -= self.total_magic_resistance_reduce
-			print(add_border(f"{self.target} has had {self} applied to them, losing {self.total_magic_resistance_reduce} magic resistance", preset=BorderPresets.DEBUFF))
+			print(add_border(f"{self.target.name} has had {self} applied to them, losing {self.total_magic_resistance_reduce} magic resistance", preset=BorderPresets.DEBUFF))
 
 
 ##* Buffs
@@ -122,9 +125,9 @@ class SlowHeal(BaseEffect):
 	def counter_ticked(self):
 		super().counter_ticked()
 		total_heal = self.value * self.stacks
+		total_heal = min(total_heal, self.target.stats.defensive.max_health - self.target.stats.defensive.health)
 		self.target.stats.defensive.health += total_heal
-		self.target.stats.defensive.health = min(self.target.stats.defensive.health, self.target.stats.defensive.max_health)
-		print(add_border(f"{self.target} has been healed for {total_heal} hp from {self.name}!", preset=BorderPresets.BUFF))
+		print(add_border(f"{self.target.name} has been healed for {total_heal} hp from {self.name}!", preset=BorderPresets.BUFF))
 
 ##? Increases the targets armor based on the amount of stacks
 class StrongBody(BaseEffect):
@@ -151,7 +154,7 @@ class StrongBody(BaseEffect):
 			self.effect_applied = True
 			self.total_armor_increase = self.value * self.stacks
 			self.target.stats.defensive.armor += self.total_armor_increase
-			print(add_border(f"{self.target} has had {self} applied to them, gaining {self.total_armor_increase} armor", preset=BorderPresets.BUFF))
+			print(add_border(f"{self.target.name} has had {self} applied to them, gaining {self.total_armor_increase} armor", preset=BorderPresets.BUFF))
 
 ##? Increase the targets magic resistance based on the amount of stacks
 class StrongMind(BaseEffect):
@@ -178,4 +181,20 @@ class StrongMind(BaseEffect):
 			self.effect_applied = True
 			self.total_mag_res_increase = self.value * self.stacks
 			self.target.stats.defensive.magic_resistance += self.total_mag_res_increase
-			print(add_border(f"{self.target} has had {self} applied to them, gaining {self.total_mag_res_increase} magic resistance", preset=BorderPresets.BUFF))
+			print(add_border(f"{self.target.name} has had {self} applied to them, gaining {self.total_mag_res_increase} magic resistance", preset=BorderPresets.BUFF))
+
+class Rest(BaseEffect):
+	def __init__(self, target: races.BaseBeing = None):
+		super().__init__("Rest", 1, target, 5)
+	
+	def counter_ticked(self):
+		super().counter_ticked()
+		picked_stat = ""
+		match random.randrange(0, 2):
+			case 0:
+				self.target.stats.base.stamina += self.value
+				picked_stat = "stamina"
+			case 1:
+				self.target.stats.base.mana += self.value
+				picked_stat = "mana"
+		print(add_border(f"{self.target.name} has gained {self.value} {picked_stat}!", preset=BorderPresets.BUFF))

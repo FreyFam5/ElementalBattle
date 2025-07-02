@@ -62,5 +62,8 @@ def add_options(text: str, options: list) -> any:
 	print(add_border(final_line, top="=", bot="="))
 
 	result = options[add_input(text, options, True)]
-	print(f"You picked {result}!")
+	if isinstance(result, Enum):
+		print(f"You picked {result.value}!")
+	else:
+		print(f"You picked {result}!")
 	return result
