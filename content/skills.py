@@ -69,7 +69,6 @@ class BaseSkill():
 						return False
 					user.stats.base.mana -= self.cost[1]
 					print(add_border(f"{user.name} lost {self.cost[1]} mana!"))
-		print(user)
 		match self.skill_type:
 			# Skills that are meant to target the users enemy, ie. "attacking" them
 			case SkillTypes.ATTACK:
